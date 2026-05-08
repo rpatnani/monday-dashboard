@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monday.com Product Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Product Serviceability Dashboard</h1>
+            <p class="subtitle">Real-time Product Tracking & Release Highlights</p>
+        </header>
+
+        <div class="config-section">
+            <h2>⚙️ Configuration</h2>
+            <div class="config-form">
+                <div class="form-group">
+                    <label for="apiToken">Monday.com API Token:</label>
+                    <input type="password" id="apiToken" placeholder="Enter your API token">
+                </div>
+                <div class="form-group">
+                    <label for="boardId">Board ID:</label>
+                    <input type="text" id="boardId" value="6642841355">
+                </div>
+                <button id="loadData" class="btn-primary">Load Dashboard Data</button>
+                <button id="refreshData" class="btn-secondary">Refresh Data</button>
+            </div>
+            <div id="status" class="status-message"></div>
+        </div>
+
+        <div id="dashboardContent" class="dashboard-content" style="display: none;">
+            
+            <!-- Highlights of the Month -->
+            <div class="highlights-section">
+                <h2>🌟 Highlights of the Month</h2>
+                <div id="monthlyHighlights" class="highlights-content"></div>
+            </div>
+
+            <!-- Delta Changes -->
+            <div class="delta-section">
+                <h2>📈 Delta Changes (Last 30 Days)</h2>
+                <div class="delta-cards">
+                    <div class="delta-card added">
+                        <div class="delta-icon">➕</div>
+                        <div class="delta-content">
+                            <h3>New Items Added</h3>
+                            <p class="delta-number" id="deltaAdded">0</p>
+                        </div>
+                    </div>
+                    <div class="delta-card delivered">
+                        <div class="delta-icon">✅</div>
+                        <div class="delta-content">
+                            <h3>Items Delivered</h3>
+                            <p class="delta-number" id="deltaDelivered">0</p>
+                        </div>
+                    </div>
+                    <div class="delta-card cancelled">
+                        <div class="delta-icon">❌</div>
+                        <div class="delta-content">
+                            <h3>Items Cancelled</h3>
+                            <p class="delta-number" id="deltaCancelled">0</p>
+                        </div>
+                    </div>
+                    <div class="delta-card modified">
+                        <div class="delta-icon">🔄</div>
+                        <div class="delta-content">
+                            <h3>Items Modified</h3>
+                            <p class="delta-number" id="deltaModified">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Per Product Serviceability -->
+            <div class="products-section">
+                <h2>📦 Product Serviceability Overview</h2>
+                <div id="productCards" class="product-cards-grid"></div>
+            </div>
+
+            <!-- Detailed Charts -->
+            <div class="charts-section">
+                <h2>📊 Analytics & Trends</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Status Distribution Across Products</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Monthly Delivery Trend</h3>
+                        <canvas id="deliveryTrendChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Product Completion Rate</h3>
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Items by Product</h3>
+                        <canvas id="productItemsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Items Table -->
+            <div class="table-container">
+                <h3>📋 All Serviceability Items</h3>
+                <div class="filter-controls">
+                    <select id="productFilter">
+                        <option value="all">All Products</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="all">All Statuses</option>
+                    </select>
+                </div>
+                <div id="itemsTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/monday-api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
