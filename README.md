@@ -1,17 +1,35 @@
-# Monday.com Product Dashboard
+# Monday.com Product Dashboard - MOR Edition
 
-A beautiful, interactive dashboard for visualizing your Monday.com board data with real-time graphs and metrics.
+A beautiful, interactive dashboard for visualizing your Monday.com board data, optimized for Monthly Operating Review (MOR) meetings.
 
-## 🎯 Features
+## 🎯 MOR Focus - Top 3 Priorities
+
+This dashboard prioritizes the three key metrics needed for MOR:
+
+1. **📈 Last Month Changes/Updates** - Total and per-product breakdown (Last 30 days)
+2. **📊 Total Items in Each State** - Overall and per-product distribution
+3. **🌟 Top 3 Highlights of the Month** - Delivered items ranked by impact
+
+### ✨ New MOR Features
+
+- **Per-Product Delta Changes**: See new, delivered, cancelled, and modified items by product
+- **State Distribution**: Total items in each state, with overall and per-product views
+- **Impact-Based Highlights**: Top 3 delivered items automatically ranked by impact column
+- **📊 Export to PowerPoint**: Professional presentation with Top 3 Highlights (NEW!)
+- **📄 Export to Text**: Formatted text file for documentation
+- **Automatic Impact Detection**: Reads impact column from Monday.com and ranks accordingly
+- **Dual Export Options**: Choose between PowerPoint or Text format based on your needs
+
+## 🎯 Additional Features
 
 - **Real-time Data Sync**: Connects directly to your Monday.com board
-- **Interactive Charts**: 
+- **Interactive Charts**:
   - Status distribution (Doughnut chart)
-  - Priority breakdown (Bar chart)
-  - Timeline overview (Line chart)
-  - Group distribution (Polar area chart)
-- **Summary Cards**: Quick metrics for total products, active items, completed, and in-progress
-- **Product Table**: Detailed view of all products with status, group, and dates
+  - Monthly delivery trends (Line chart)
+  - Product completion rates (Bar chart)
+  - Items by product (Polar area chart)
+- **Product Cards**: Per-product status breakdown with visual indicators
+- **Detailed Table**: Filterable view of all items with status, product, and dates
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **Secure Storage**: API credentials saved locally in browser
 
@@ -37,7 +55,53 @@ Your board ID is in the URL: `https://ibm.monday.com/boards/6642841355`
 3. Enter your Board ID: `6642841355`
 4. Click **Load Dashboard Data**
 
+## 📥 Export MOR Report
+
+After loading your data, you have **two export options**:
+
+### 📊 Export to PowerPoint (Recommended for MOR Meetings)
+Click **"📊 Export to PowerPoint"** to generate a professional presentation with:
+- **Slide 1**: Title slide with report period
+- **Slide 2**: **Top 3 Highlights** (🥇🥈🥉) - Primary focus for MOR
+- **Slide 3**: Last month's changes/updates with per-product breakdown
+- **Slide 4**: Total items in each state (overall and per-product)
+
+The presentation is automatically downloaded as `MOR_Report_YYYY-MM-DD.pptx` and ready for your meeting!
+
+### 📄 Export to Text (For Documentation)
+Click **"📄 Export to Text"** to generate a formatted text file containing:
+- Last month's changes/updates (total and per-product)
+- Total items in each state (overall and per-product)
+- Top 3 highlights of the month (ranked by impact)
+
+The report is automatically downloaded as `MOR_Report_YYYY-MM-DD.txt` and ready to share!
+
+**📖 For detailed PowerPoint export guide, see [POWERPOINT_EXPORT_GUIDE.md](POWERPOINT_EXPORT_GUIDE.md)**
+
 ## 📊 Dashboard Components
+
+### MOR Priority Sections
+
+#### 1. Last Month Changes/Updates
+- **Total Changes**: Aggregate count of all changes in last 30 days
+- **Per-Product Breakdown**: Each product shows:
+  - ➕ New Items Added
+  - ✅ Items Delivered
+  - ❌ Items Cancelled
+  - 🔄 Items Modified
+  - Total Changes
+
+#### 2. Total Items in Each State
+- **Overall Distribution**: Total count for each status across all products
+- **Per-Product Distribution**: Status breakdown for each product with totals
+
+#### 3. Top 3 Highlights of the Month
+- Shows top 3 delivered items from current month
+- Ranked by Impact column (High > Medium > Low)
+- Displays: 🥇🥈🥉 medals, item name, product, impact level, delivery date
+- **Note**: Requires an "Impact" column in your Monday.com board for ranking
+
+### Additional Analytics
 
 ### Summary Cards
 - **Total Products**: Total number of items on the board

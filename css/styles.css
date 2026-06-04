@@ -47,6 +47,20 @@ header h1 {
     margin-bottom: 20px;
 }
 
+.export-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-powerpoint {
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+}
+
+.btn-powerpoint:hover {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    transform: translateY(-2px);
+}
+
 .config-form {
     display: grid;
     gap: 20px;
@@ -76,7 +90,7 @@ header h1 {
     border-color: #667eea;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-export-quick {
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
@@ -85,6 +99,20 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s;
     margin-right: 10px;
+}
+
+.btn-export-quick {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    font-size: 1.1em;
+    padding: 14px 28px;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.btn-export-quick:hover {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
 }
 
 .btn-primary {
@@ -569,6 +597,272 @@ table tbody tr:hover {
     .filter-controls {
         flex-direction: column;
     }
+}
+
+/* MOR Report Section */
+.mor-report-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.mor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mor-header h2 {
+    color: white;
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.btn-export {
+    background: white;
+    color: #667eea;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.section-description {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 15px;
+}
+
+/* Delta Per Product */
+.delta-summary {
+    margin-bottom: 20px;
+}
+
+.delta-total-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.delta-total-card h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.delta-total-number {
+    font-size: 3em;
+    font-weight: bold;
+    margin: 0;
+}
+
+.delta-per-product {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.product-delta-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.product-delta-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.product-delta-card h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.product-delta-stats {
+    display: grid;
+    gap: 10px;
+}
+
+.delta-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.delta-stat-label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.delta-stat-value {
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* State Section */
+.state-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.state-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.state-summary {
+    margin-bottom: 30px;
+}
+
+.state-summary h3 {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.state-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.state-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #667eea;
+    padding: 20px;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.state-card:hover {
+    transform: translateY(-3px);
+}
+
+.state-card-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.state-card-value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.state-per-product {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.product-state-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.product-state-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.product-state-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.product-state-header h4 {
+    color: #333;
+    margin: 0;
+}
+
+.product-state-total {
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.product-state-breakdown {
+    display: grid;
+    gap: 8px;
+}
+
+.state-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.state-breakdown-label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.state-breakdown-value {
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* Additional Section */
+.additional-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    opacity: 0.8;
+}
+
+.additional-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+/* Highlight Impact Badge */
+.highlight-impact {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-left: 10px;
 }
 
 /* Made with Bob */

@@ -19,6 +19,9 @@ class Dashboard {
         // Event listeners
         document.getElementById('loadData').addEventListener('click', () => this.loadDashboard());
         document.getElementById('refreshData').addEventListener('click', () => this.loadDashboard());
+        document.getElementById('quickExportMOR').addEventListener('click', () => this.quickExportMOR());
+        document.getElementById('exportReport').addEventListener('click', () => this.exportMORReport());
+        document.getElementById('exportPowerPoint').addEventListener('click', () => this.exportMORToPowerPoint());
 
         // Auto-load if credentials exist
         const savedToken = localStorage.getItem('mondayApiToken');
@@ -107,9 +110,12 @@ class Dashboard {
             // Show dashboard
             document.getElementById('dashboardContent').style.display = 'block';
 
-            // Update all components
-            this.updateMonthlyHighlights();
+            // Update all components - MOR priorities first
             this.updateDeltaChanges();
+            this.updateStateDistribution();
+            this.updateMonthlyHighlights();
+            
+            // Additional analytics
             this.updateProductCards();
             this.updateCharts();
             this.updateItemsTable();
@@ -131,9 +137,13 @@ class Dashboard {
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
 
-        // Find status column
-        const statusColumn = this.boardData.columns.find(col => 
+        // Find status and impact columns
+        const statusColumn = this.boardData.columns.find(col =>
             col.type === 'status' || col.title.toLowerCase().includes('status')
+        );
+        
+        const impactColumn = this.boardData.columns.find(col =>
+            col.title.toLowerCase().includes('impact')
         );
 
         // Find items delivered/completed this month
@@ -154,9 +164,25 @@ class Dashboard {
             return false;
         });
 
+        // Sort by impact if impact column exists
+        if (impactColumn) {
+            deliveredThisMonth.sort((a, b) => {
+                const impactA = a.column_values.find(cv => cv.id === impactColumn.id);
+                const impactB = b.column_values.find(cv => cv.id === impactColumn.id);
+                
+                const valueA = impactA ? this.getImpactScore(mondayAPI.parseColumnValue(impactA)) : 0;
+                const valueB = impactB ? this.getImpactScore(mondayAPI.parseColumnValue(impactB)) : 0;
+                
+                return valueB - valueA; // Descending order
+            });
+        }
+
+        // Get top 3
+        const top3 = deliveredThisMonth.slice(0, 3);
+
         const highlightsContainer = document.getElementById('monthlyHighlights');
         
-        if (deliveredThisMonth.length === 0) {
+        if (top3.length === 0) {
             highlightsContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📦</div>
@@ -167,23 +193,54 @@ class Dashboard {
         }
 
         let highlightsHTML = '';
-        deliveredThisMonth.forEach(item => {
+        top3.forEach((item, index) => {
             const date = new Date(item.updated_at).toLocaleDateString();
             const product = item.group?.title || 'General';
             
+            let impactText = '';
+            if (impactColumn) {
+                const impactValue = item.column_values.find(cv => cv.id === impactColumn.id);
+                if (impactValue) {
+                    const impact = mondayAPI.parseColumnValue(impactValue);
+                    if (impact) {
+                        impactText = `<span class="highlight-impact">Impact: ${impact}</span>`;
+                    }
+                }
+            }
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            
             highlightsHTML += `
                 <div class="highlight-item">
-                    <div class="highlight-icon">🎉</div>
+                    <div class="highlight-icon">${medals[index]}</div>
                     <div class="highlight-content">
                         <h4>${item.name}</h4>
                         <p>Product: ${product}</p>
                     </div>
+                    ${impactText}
                     <div class="highlight-date">${date}</div>
                 </div>
             `;
         });
 
         highlightsContainer.innerHTML = highlightsHTML;
+    }
+
+    getImpactScore(impactValue) {
+        if (!impactValue) return 0;
+        
+        const impactStr = String(impactValue).toLowerCase();
+        
+        // Map impact levels to scores
+        if (impactStr.includes('critical') || impactStr.includes('high')) return 3;
+        if (impactStr.includes('medium') || impactStr.includes('moderate')) return 2;
+        if (impactStr.includes('low')) return 1;
+        
+        // Try to parse as number
+        const num = parseFloat(impactStr);
+        if (!isNaN(num)) return num;
+        
+        return 0;
     }
 
     updateDeltaChanges() {
@@ -196,14 +253,25 @@ class Dashboard {
             col.type === 'status' || col.title.toLowerCase().includes('status')
         );
 
-        let added = 0;
-        let delivered = 0;
-        let cancelled = 0;
-        let modified = 0;
+        // Track overall and per-product changes
+        const productChanges = {};
+        let totalChanges = 0;
 
         items.forEach(item => {
             const created = new Date(item.created_at);
             const updated = new Date(item.updated_at);
+            const product = item.group?.title || 'Ungrouped';
+
+            // Initialize product tracking
+            if (!productChanges[product]) {
+                productChanges[product] = {
+                    added: 0,
+                    delivered: 0,
+                    cancelled: 0,
+                    modified: 0,
+                    total: 0
+                };
+            }
 
             // Check if item was updated in last 30 days
             const wasUpdatedRecently = updated >= thirtyDaysAgo;
@@ -211,7 +279,8 @@ class Dashboard {
 
             // New items added in last 30 days
             if (wasCreatedRecently) {
-                added++;
+                productChanges[product].added++;
+                totalChanges++;
             }
 
             // Only count changes for items updated in last 30 days
@@ -223,29 +292,166 @@ class Dashboard {
                     
                     // Items delivered/completed in last 30 days
                     if (statusLower.includes('done') || statusLower.includes('complete') || statusLower.includes('delivered')) {
-                        delivered++;
+                        productChanges[product].delivered++;
+                        if (!wasCreatedRecently) totalChanges++;
                     }
                     // Items cancelled/closed in last 30 days
                     else if (statusLower.includes('cancel') || statusLower.includes('closed')) {
-                        cancelled++;
+                        productChanges[product].cancelled++;
+                        if (!wasCreatedRecently) totalChanges++;
                     }
                     // Items with other status changes (modified) in last 30 days
-                    // Exclude newly created items from modified count
                     else if (!wasCreatedRecently) {
-                        modified++;
+                        productChanges[product].modified++;
+                        totalChanges++;
                     }
                 }
             }
             // Items updated but without status column, count as modified if not newly created
             else if (wasUpdatedRecently && !wasCreatedRecently && !statusColumn) {
-                modified++;
+                productChanges[product].modified++;
+                totalChanges++;
             }
         });
 
-        document.getElementById('deltaAdded').textContent = added;
-        document.getElementById('deltaDelivered').textContent = delivered;
-        document.getElementById('deltaCancelled').textContent = cancelled;
-        document.getElementById('deltaModified').textContent = modified;
+        // Calculate totals per product
+        Object.keys(productChanges).forEach(product => {
+            const p = productChanges[product];
+            p.total = p.added + p.delivered + p.cancelled + p.modified;
+        });
+
+        // Update total changes
+        document.getElementById('deltaTotalChanges').textContent = totalChanges;
+
+        // Update per-product breakdown
+        const perProductContainer = document.getElementById('deltaPerProduct');
+        let perProductHTML = '';
+
+        Object.keys(productChanges).sort().forEach(product => {
+            const data = productChanges[product];
+            
+            perProductHTML += `
+                <div class="product-delta-card">
+                    <h4>${product}</h4>
+                    <div class="product-delta-stats">
+                        <div class="delta-stat-row">
+                            <span class="delta-stat-label">➕ New Items</span>
+                            <span class="delta-stat-value">${data.added}</span>
+                        </div>
+                        <div class="delta-stat-row">
+                            <span class="delta-stat-label">✅ Delivered</span>
+                            <span class="delta-stat-value">${data.delivered}</span>
+                        </div>
+                        <div class="delta-stat-row">
+                            <span class="delta-stat-label">❌ Cancelled</span>
+                            <span class="delta-stat-value">${data.cancelled}</span>
+                        </div>
+                        <div class="delta-stat-row">
+                            <span class="delta-stat-label">🔄 Modified</span>
+                            <span class="delta-stat-value">${data.modified}</span>
+                        </div>
+                        <div class="delta-stat-row" style="background: #667eea; color: white; font-weight: bold;">
+                            <span class="delta-stat-label">Total Changes</span>
+                            <span class="delta-stat-value" style="color: white;">${data.total}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        perProductContainer.innerHTML = perProductHTML;
+    }
+
+    updateStateDistribution() {
+        const items = this.boardData.items_page.items;
+        
+        // Find status column
+        const statusColumn = this.boardData.columns.find(col =>
+            col.type === 'status' || col.title.toLowerCase().includes('status')
+        );
+
+        // Overall state distribution
+        const overallStates = {};
+        
+        // Per-product state distribution
+        const productStates = {};
+
+        items.forEach(item => {
+            const product = item.group?.title || 'Ungrouped';
+            
+            // Initialize product tracking
+            if (!productStates[product]) {
+                productStates[product] = {
+                    total: 0,
+                    states: {}
+                };
+            }
+            
+            productStates[product].total++;
+
+            if (statusColumn) {
+                const statusValue = item.column_values.find(cv => cv.id === statusColumn.id);
+                if (statusValue) {
+                    const status = mondayAPI.parseColumnValue(statusValue) || 'No Status';
+                    
+                    // Overall count
+                    overallStates[status] = (overallStates[status] || 0) + 1;
+                    
+                    // Per-product count
+                    productStates[product].states[status] = (productStates[product].states[status] || 0) + 1;
+                }
+            }
+        });
+
+        // Update overall state distribution
+        const overallContainer = document.getElementById('totalStateDistribution');
+        let overallHTML = '';
+
+        Object.keys(overallStates).sort().forEach(state => {
+            const count = overallStates[state];
+            overallHTML += `
+                <div class="state-card">
+                    <div class="state-card-label">${state}</div>
+                    <div class="state-card-value">${count}</div>
+                </div>
+            `;
+        });
+
+        overallContainer.innerHTML = overallHTML;
+
+        // Update per-product state distribution
+        const perProductContainer = document.getElementById('statePerProduct');
+        let perProductHTML = '';
+
+        Object.keys(productStates).sort().forEach(product => {
+            const data = productStates[product];
+            
+            perProductHTML += `
+                <div class="product-state-card">
+                    <div class="product-state-header">
+                        <h4>${product}</h4>
+                        <span class="product-state-total">${data.total} items</span>
+                    </div>
+                    <div class="product-state-breakdown">
+            `;
+
+            Object.keys(data.states).sort().forEach(state => {
+                const count = data.states[state];
+                perProductHTML += `
+                    <div class="state-breakdown-row">
+                        <span class="state-breakdown-label">${state}</span>
+                        <span class="state-breakdown-value">${count}</span>
+                    </div>
+                `;
+            });
+
+            perProductHTML += `
+                    </div>
+                </div>
+            `;
+        });
+
+        perProductContainer.innerHTML = perProductHTML;
     }
 
     updateProductCards() {
@@ -702,6 +908,638 @@ class Dashboard {
         `;
 
         document.getElementById('itemsTable').innerHTML = tableHTML;
+    }
+
+    quickExportMOR() {
+        // Check if data is loaded
+        if (!this.boardData) {
+            // Show modal asking user to choose format
+            const choice = confirm(
+                '📊 Quick Export MOR Report\n\n' +
+                'Please load dashboard data first by entering:\n' +
+                '1. Your Monday.com API Token\n' +
+                '2. Your Board ID\n' +
+                '3. Click "Load Dashboard Data"\n\n' +
+                'Then you can export the report.\n\n' +
+                'Click OK to see instructions, or Cancel to continue.'
+            );
+            
+            if (choice) {
+                alert(
+                    '📋 How to Get Your Credentials:\n\n' +
+                    '1. API Token:\n' +
+                    '   - Go to Monday.com\n' +
+                    '   - Click profile → Developers → API\n' +
+                    '   - Copy your token\n\n' +
+                    '2. Board ID:\n' +
+                    '   - Open your board\n' +
+                    '   - Look at URL: monday.com/boards/[ID]\n' +
+                    '   - Copy the number\n\n' +
+                    '3. Enter both above and click "Load Dashboard Data"'
+                );
+            }
+            return;
+        }
+
+        // Data is loaded, ask which format
+        const format = confirm(
+            '📊 Export MOR Report\n\n' +
+            'Choose export format:\n\n' +
+            'OK = PowerPoint (.pptx) - Recommended for presentations\n' +
+            'Cancel = Text (.txt) - Simple text format\n\n' +
+            'Both include Top 3 Highlights from Impact column'
+        );
+
+        if (format) {
+            // Export to PowerPoint
+            this.exportMORToPowerPoint();
+        } else {
+            // Export to Text
+            this.exportMORReport();
+        }
+    }
+
+    exportMORReport() {
+        if (!this.boardData) {
+            alert('Please load dashboard data first');
+            return;
+        }
+
+        const reportData = this.generateMORReportData();
+        
+        // Create text format
+        const textReport = this.formatReportAsText(reportData);
+        
+        // Download as text file
+        this.downloadTextFile(textReport, `MOR_Report_${new Date().toISOString().split('T')[0]}.txt`);
+        
+        // Show success message
+        this.showStatus('MOR Report exported successfully!', 'success');
+        setTimeout(() => this.hideStatus(), 3000);
+    }
+
+    generateMORReportData() {
+        const items = this.boardData.items_page.items;
+        const currentMonth = new Date().toLocaleDateString('default', { month: 'long', year: 'numeric' });
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const statusColumn = this.boardData.columns.find(col =>
+            col.type === 'status' || col.title.toLowerCase().includes('status')
+        );
+        
+        const impactColumn = this.boardData.columns.find(col =>
+            col.title.toLowerCase().includes('impact')
+        );
+
+        // 1. Delta Changes
+        const productChanges = {};
+        let totalChanges = 0;
+
+        items.forEach(item => {
+            const created = new Date(item.created_at);
+            const updated = new Date(item.updated_at);
+            const product = item.group?.title || 'Ungrouped';
+
+            if (!productChanges[product]) {
+                productChanges[product] = { added: 0, delivered: 0, cancelled: 0, modified: 0, total: 0 };
+            }
+
+            const wasUpdatedRecently = updated >= thirtyDaysAgo;
+            const wasCreatedRecently = created >= thirtyDaysAgo;
+
+            if (wasCreatedRecently) {
+                productChanges[product].added++;
+                totalChanges++;
+            }
+
+            if (wasUpdatedRecently && statusColumn) {
+                const statusValue = item.column_values.find(cv => cv.id === statusColumn.id);
+                if (statusValue) {
+                    const status = mondayAPI.parseColumnValue(statusValue);
+                    const statusLower = (status || '').toLowerCase();
+                    
+                    if (statusLower.includes('done') || statusLower.includes('complete') || statusLower.includes('delivered')) {
+                        productChanges[product].delivered++;
+                        if (!wasCreatedRecently) totalChanges++;
+                    } else if (statusLower.includes('cancel') || statusLower.includes('closed')) {
+                        productChanges[product].cancelled++;
+                        if (!wasCreatedRecently) totalChanges++;
+                    } else if (!wasCreatedRecently) {
+                        productChanges[product].modified++;
+                        totalChanges++;
+                    }
+                }
+            }
+        });
+
+        Object.keys(productChanges).forEach(product => {
+            const p = productChanges[product];
+            p.total = p.added + p.delivered + p.cancelled + p.modified;
+        });
+
+        // 2. State Distribution
+        const overallStates = {};
+        const productStates = {};
+
+        items.forEach(item => {
+            const product = item.group?.title || 'Ungrouped';
+            
+            if (!productStates[product]) {
+                productStates[product] = { total: 0, states: {} };
+            }
+            
+            productStates[product].total++;
+
+            if (statusColumn) {
+                const statusValue = item.column_values.find(cv => cv.id === statusColumn.id);
+                if (statusValue) {
+                    const status = mondayAPI.parseColumnValue(statusValue) || 'No Status';
+                    overallStates[status] = (overallStates[status] || 0) + 1;
+                    productStates[product].states[status] = (productStates[product].states[status] || 0) + 1;
+                }
+            }
+        });
+
+        // 3. Top 3 Highlights
+        const deliveredThisMonth = items.filter(item => {
+            const updated = new Date(item.updated_at);
+            if (updated.getMonth() !== new Date().getMonth() || updated.getFullYear() !== new Date().getFullYear()) {
+                return false;
+            }
+
+            if (statusColumn) {
+                const statusValue = item.column_values.find(cv => cv.id === statusColumn.id);
+                if (statusValue) {
+                    const status = mondayAPI.parseColumnValue(statusValue);
+                    const statusLower = (status || '').toLowerCase();
+                    return statusLower.includes('done') || statusLower.includes('complete') || statusLower.includes('delivered');
+                }
+            }
+            return false;
+        });
+
+        if (impactColumn) {
+            deliveredThisMonth.sort((a, b) => {
+                const impactA = a.column_values.find(cv => cv.id === impactColumn.id);
+                const impactB = b.column_values.find(cv => cv.id === impactColumn.id);
+                
+                const valueA = impactA ? this.getImpactScore(mondayAPI.parseColumnValue(impactA)) : 0;
+                const valueB = impactB ? this.getImpactScore(mondayAPI.parseColumnValue(impactB)) : 0;
+                
+                return valueB - valueA;
+            });
+        }
+
+        const top3Highlights = deliveredThisMonth.slice(0, 3).map(item => {
+            const product = item.group?.title || 'General';
+            const date = new Date(item.updated_at).toLocaleDateString();
+            
+            let impact = 'N/A';
+            if (impactColumn) {
+                const impactValue = item.column_values.find(cv => cv.id === impactColumn.id);
+                if (impactValue) {
+                    impact = mondayAPI.parseColumnValue(impactValue) || 'N/A';
+                }
+            }
+            
+            return { name: item.name, product, date, impact };
+        });
+
+        return {
+            month: currentMonth,
+            totalChanges,
+            productChanges,
+            overallStates,
+            productStates,
+            top3Highlights
+        };
+    }
+
+    formatReportAsText(data) {
+        let report = '';
+        
+        report += '═══════════════════════════════════════════════════════════════\n';
+        report += '           MONTHLY OPERATING REVIEW (MOR) REPORT\n';
+        report += '═══════════════════════════════════════════════════════════════\n';
+        report += `Report Period: ${data.month}\n`;
+        report += `Generated: ${new Date().toLocaleString()}\n`;
+        report += '═══════════════════════════════════════════════════════════════\n\n';
+
+        // Section 1: Last Month Changes/Updates
+        report += '1. LAST MONTH CHANGES/UPDATES (Last 30 Days)\n';
+        report += '───────────────────────────────────────────────────────────────\n';
+        report += `Total Changes: ${data.totalChanges}\n\n`;
+        report += 'Per Product Breakdown:\n\n';
+
+        Object.keys(data.productChanges).sort().forEach(product => {
+            const changes = data.productChanges[product];
+            report += `  ${product}:\n`;
+            report += `    • New Items Added:    ${changes.added}\n`;
+            report += `    • Items Delivered:    ${changes.delivered}\n`;
+            report += `    • Items Cancelled:    ${changes.cancelled}\n`;
+            report += `    • Items Modified:     ${changes.modified}\n`;
+            report += `    • Total Changes:      ${changes.total}\n\n`;
+        });
+
+        // Section 2: Total Items in Each State
+        report += '\n2. TOTAL ITEMS IN EACH STATE\n';
+        report += '───────────────────────────────────────────────────────────────\n';
+        report += 'Overall Status Distribution:\n\n';
+
+        Object.keys(data.overallStates).sort().forEach(state => {
+            report += `  ${state}: ${data.overallStates[state]}\n`;
+        });
+
+        report += '\nPer Product Status Distribution:\n\n';
+
+        Object.keys(data.productStates).sort().forEach(product => {
+            const states = data.productStates[product];
+            report += `  ${product} (Total: ${states.total} items):\n`;
+            Object.keys(states.states).sort().forEach(state => {
+                report += `    • ${state}: ${states.states[state]}\n`;
+            });
+            report += '\n';
+        });
+
+        // Section 3: Top 3 Highlights
+        report += '\n3. TOP 3 HIGHLIGHTS OF THE MONTH\n';
+        report += '───────────────────────────────────────────────────────────────\n';
+        report += 'Based on delivered items with highest impact:\n\n';
+
+        if (data.top3Highlights.length === 0) {
+            report += '  No items delivered this month yet.\n';
+        } else {
+            data.top3Highlights.forEach((highlight, index) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                report += `  ${medals[index]} #${index + 1}: ${highlight.name}\n`;
+                report += `     Product: ${highlight.product}\n`;
+                report += `     Impact: ${highlight.impact}\n`;
+                report += `     Delivered: ${highlight.date}\n\n`;
+            });
+        }
+
+        report += '═══════════════════════════════════════════════════════════════\n';
+        report += 'End of Report\n';
+        report += '═══════════════════════════════════════════════════════════════\n';
+
+        return report;
+    }
+
+    downloadTextFile(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    exportMORToPowerPoint() {
+        if (!this.boardData) {
+            alert('Please load dashboard data first');
+            return;
+        }
+
+        const reportData = this.generateMORReportData();
+        this.createPowerPointPresentation(reportData);
+        
+        // Show success message
+        this.showStatus('Generating PowerPoint presentation...', 'loading');
+    }
+
+    async createPowerPointPresentation(data) {
+        try {
+            // Create new presentation
+            const pptx = new PptxGenJS();
+            
+            // Set presentation properties
+            pptx.author = 'Monday.com Dashboard';
+            pptx.company = 'IBM';
+            pptx.subject = 'Monthly Operating Review';
+            pptx.title = 'MOR Report';
+
+            // Define colors
+            const colors = {
+                primary: '667eea',
+                secondary: '764ba2',
+                accent: '4CAF50',
+                text: '333333',
+                lightGray: 'f5f5f5',
+                white: 'FFFFFF'
+            };
+
+            // Slide 1: Title Slide
+            let slide = pptx.addSlide();
+            slide.background = { color: colors.primary };
+            
+            slide.addText('Monthly Operating Review (MOR)', {
+                x: 0.5,
+                y: 1.5,
+                w: 9,
+                h: 1.5,
+                fontSize: 44,
+                bold: true,
+                color: colors.white,
+                align: 'center'
+            });
+            
+            slide.addText(data.month, {
+                x: 0.5,
+                y: 3.0,
+                w: 9,
+                h: 0.8,
+                fontSize: 28,
+                color: colors.white,
+                align: 'center'
+            });
+            
+            slide.addText(`Generated: ${new Date().toLocaleDateString()}`, {
+                x: 0.5,
+                y: 4.0,
+                w: 9,
+                h: 0.5,
+                fontSize: 16,
+                color: colors.white,
+                align: 'center',
+                italic: true
+            });
+
+            // Slide 2: Top 3 Highlights (Most Important)
+            slide = pptx.addSlide();
+            slide.addText('🌟 Top 3 Highlights of the Month', {
+                x: 0.5,
+                y: 0.3,
+                w: 9,
+                h: 0.6,
+                fontSize: 32,
+                bold: true,
+                color: colors.primary
+            });
+
+            slide.addText('Based on delivered items with highest impact', {
+                x: 0.5,
+                y: 0.9,
+                w: 9,
+                h: 0.4,
+                fontSize: 14,
+                color: colors.text,
+                italic: true
+            });
+
+            if (data.top3Highlights.length === 0) {
+                slide.addText('No items delivered this month yet', {
+                    x: 1.5,
+                    y: 2.5,
+                    w: 7,
+                    h: 1,
+                    fontSize: 20,
+                    color: colors.text,
+                    align: 'center'
+                });
+            } else {
+                const medals = ['🥇', '🥈', '🥉'];
+                let yPos = 1.5;
+                
+                data.top3Highlights.forEach((highlight, index) => {
+                    // Highlight box
+                    slide.addShape(pptx.ShapeType.rect, {
+                        x: 0.8,
+                        y: yPos,
+                        w: 8.4,
+                        h: 1.3,
+                        fill: { color: colors.lightGray },
+                        line: { color: colors.primary, width: 2 }
+                    });
+
+                    // Medal and title
+                    slide.addText(`${medals[index]} ${highlight.name}`, {
+                        x: 1.0,
+                        y: yPos + 0.15,
+                        w: 8.0,
+                        h: 0.4,
+                        fontSize: 18,
+                        bold: true,
+                        color: colors.text
+                    });
+
+                    // Details
+                    slide.addText(`Product: ${highlight.product}  |  Impact: ${highlight.impact}  |  Delivered: ${highlight.date}`, {
+                        x: 1.0,
+                        y: yPos + 0.6,
+                        w: 8.0,
+                        h: 0.4,
+                        fontSize: 14,
+                        color: colors.text
+                    });
+
+                    yPos += 1.5;
+                });
+            }
+
+            // Slide 3: Last Month Changes/Updates
+            slide = pptx.addSlide();
+            slide.addText('📈 Last Month Changes/Updates', {
+                x: 0.5,
+                y: 0.3,
+                w: 9,
+                h: 0.6,
+                fontSize: 32,
+                bold: true,
+                color: colors.primary
+            });
+
+            slide.addText('Last 30 Days', {
+                x: 0.5,
+                y: 0.9,
+                w: 9,
+                h: 0.4,
+                fontSize: 14,
+                color: colors.text,
+                italic: true
+            });
+
+            // Total changes box
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 3.5,
+                y: 1.5,
+                w: 3,
+                h: 1.2,
+                fill: { color: colors.accent },
+                line: { color: colors.accent, width: 0 }
+            });
+
+            slide.addText('Total Changes', {
+                x: 3.5,
+                y: 1.6,
+                w: 3,
+                h: 0.4,
+                fontSize: 16,
+                color: colors.white,
+                align: 'center',
+                bold: true
+            });
+
+            slide.addText(data.totalChanges.toString(), {
+                x: 3.5,
+                y: 2.0,
+                w: 3,
+                h: 0.6,
+                fontSize: 36,
+                color: colors.white,
+                align: 'center',
+                bold: true
+            });
+
+            // Per product breakdown table
+            const tableData = [
+                [
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Added', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Delivered', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Cancelled', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Modified', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary } }
+                ]
+            ];
+
+            Object.keys(data.productChanges).sort().forEach(product => {
+                const changes = data.productChanges[product];
+                tableData.push([
+                    product,
+                    changes.added.toString(),
+                    changes.delivered.toString(),
+                    changes.cancelled.toString(),
+                    changes.modified.toString(),
+                    changes.total.toString()
+                ]);
+            });
+
+            slide.addTable(tableData, {
+                x: 0.5,
+                y: 3.0,
+                w: 9,
+                fontSize: 12,
+                border: { pt: 1, color: colors.primary },
+                align: 'center',
+                valign: 'middle'
+            });
+
+            // Slide 4: Total Items in Each State
+            slide = pptx.addSlide();
+            slide.addText('📊 Total Items in Each State', {
+                x: 0.5,
+                y: 0.3,
+                w: 9,
+                h: 0.6,
+                fontSize: 32,
+                bold: true,
+                color: colors.primary
+            });
+
+            // Overall status distribution
+            slide.addText('Overall Status Distribution:', {
+                x: 0.5,
+                y: 1.0,
+                w: 9,
+                h: 0.4,
+                fontSize: 18,
+                bold: true,
+                color: colors.text
+            });
+
+            let xPos = 1.0;
+            let yPos = 1.6;
+            let count = 0;
+            
+            Object.keys(data.overallStates).sort().forEach(state => {
+                const stateCount = data.overallStates[state];
+                
+                slide.addShape(pptx.ShapeType.rect, {
+                    x: xPos,
+                    y: yPos,
+                    w: 1.8,
+                    h: 0.8,
+                    fill: { color: colors.lightGray },
+                    line: { color: colors.primary, width: 1 }
+                });
+
+                slide.addText(state, {
+                    x: xPos,
+                    y: yPos + 0.1,
+                    w: 1.8,
+                    h: 0.3,
+                    fontSize: 12,
+                    color: colors.text,
+                    align: 'center',
+                    bold: true
+                });
+
+                slide.addText(stateCount.toString(), {
+                    x: xPos,
+                    y: yPos + 0.4,
+                    w: 1.8,
+                    h: 0.3,
+                    fontSize: 18,
+                    color: colors.primary,
+                    align: 'center',
+                    bold: true
+                });
+
+                xPos += 2.0;
+                count++;
+                
+                if (count % 4 === 0) {
+                    xPos = 1.0;
+                    yPos += 1.0;
+                }
+            });
+
+            // Per product status table
+            const statusTableData = [
+                [
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Total Items', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary } }
+                ]
+            ];
+
+            Object.keys(data.productStates).sort().forEach(product => {
+                const states = data.productStates[product];
+                const statusBreakdown = Object.keys(states.states)
+                    .map(s => `${s}: ${states.states[s]}`)
+                    .join(', ');
+                
+                statusTableData.push([
+                    product,
+                    states.total.toString(),
+                    statusBreakdown
+                ]);
+            });
+
+            slide.addTable(statusTableData, {
+                x: 0.5,
+                y: 3.5,
+                w: 9,
+                fontSize: 11,
+                border: { pt: 1, color: colors.primary },
+                valign: 'middle'
+            });
+
+            // Save presentation
+            const fileName = `MOR_Report_${new Date().toISOString().split('T')[0]}.pptx`;
+            await pptx.writeFile({ fileName });
+            
+            this.showStatus('PowerPoint presentation exported successfully!', 'success');
+            setTimeout(() => this.hideStatus(), 3000);
+
+        } catch (error) {
+            console.error('Error creating PowerPoint:', error);
+            this.showStatus(`Error creating PowerPoint: ${error.message}`, 'error');
+        }
     }
 }
 

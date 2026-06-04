@@ -6,6 +6,7 @@
     <title>Monday.com Product Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
 <body>
     <div class="container">
@@ -27,21 +28,58 @@
                 </div>
                 <button id="loadData" class="btn-primary">Load Dashboard Data</button>
                 <button id="refreshData" class="btn-secondary">Refresh Data</button>
+                <button id="quickExportMOR" class="btn-export-quick">📊 Quick Export MOR Report</button>
             </div>
             <div id="status" class="status-message"></div>
         </div>
 
         <div id="dashboardContent" class="dashboard-content" style="display: none;">
             
-            <!-- Highlights of the Month -->
+            <!-- MOR Report Section -->
+            <div class="mor-report-section">
+                <div class="mor-header">
+                    <h2>📊 Monthly Operating Review (MOR) Report</h2>
+                    <div class="export-buttons">
+                        <button id="exportReport" class="btn-export">📄 Export to Text</button>
+                        <button id="exportPowerPoint" class="btn-export btn-powerpoint">📊 Export to PowerPoint</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Last Month Changes/Updates -->
+            <div class="delta-section">
+                <h2>📈 Last Month Changes/Updates</h2>
+                <div class="delta-summary">
+                    <div class="delta-total-card">
+                        <h3>Total Changes</h3>
+                        <p class="delta-total-number" id="deltaTotalChanges">0</p>
+                    </div>
+                </div>
+                <h3 style="margin-top: 20px; color: #666;">Per Product Breakdown</h3>
+                <div id="deltaPerProduct" class="delta-per-product"></div>
+            </div>
+
+            <!-- 2. Total Items in Each State -->
+            <div class="state-section">
+                <h2>📊 Total Items in Each State</h2>
+                <div class="state-summary">
+                    <h3>Overall Status Distribution</h3>
+                    <div id="totalStateDistribution" class="state-cards"></div>
+                </div>
+                <h3 style="margin-top: 20px; color: #666;">Per Product Status Distribution</h3>
+                <div id="statePerProduct" class="state-per-product"></div>
+            </div>
+
+            <!-- 3. Top 3 Highlights of the Month -->
             <div class="highlights-section">
-                <h2>🌟 Highlights of the Month</h2>
+                <h2>🌟 Top 3 Highlights of the Month</h2>
+                <p class="section-description">Based on delivered items with highest impact</p>
                 <div id="monthlyHighlights" class="highlights-content"></div>
             </div>
 
-            <!-- Delta Changes -->
-            <div class="delta-section">
-                <h2>📈 Delta Changes (Last 30 Days)</h2>
+            <!-- Additional Analytics (Nice to Have) -->
+            <div class="additional-section">
+                <h2>📈 Additional Analytics</h2>
                 <div class="delta-cards">
                     <div class="delta-card added">
                         <div class="delta-icon">➕</div>
@@ -78,6 +116,8 @@
             <div class="products-section">
                 <h2>📦 Product Serviceability Overview</h2>
                 <div id="productCards" class="product-cards-grid"></div>
+            </div>
+
             </div>
 
             <!-- Detailed Charts -->
