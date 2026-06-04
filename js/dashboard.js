@@ -1340,144 +1340,179 @@ class Dashboard {
                 });
             }
 
-            // Slide 3: Last Month Changes/Updates
+            // Slide 3: Last Month Changes/Updates - Summary Only
             slide = pptx.addSlide();
             slide.addText('📈 Last Month Changes/Updates', {
                 x: 0.5,
-                y: 0.3,
+                y: 0.5,
                 w: 9,
-                h: 0.6,
-                fontSize: 32,
+                h: 0.8,
+                fontSize: 36,
                 bold: true,
-                color: colors.primary
+                color: colors.primary,
+                align: 'center'
             });
 
             slide.addText('Last 30 Days', {
                 x: 0.5,
-                y: 0.9,
+                y: 1.3,
                 w: 9,
                 h: 0.4,
-                fontSize: 14,
+                fontSize: 16,
                 color: colors.text,
-                italic: true
+                italic: true,
+                align: 'center'
             });
 
-            // Total changes box - smaller and higher
+            // Total changes box - centered and larger
             slide.addShape(pptx.ShapeType.rect, {
-                x: 3.75,
-                y: 1.4,
-                w: 2.5,
-                h: 1.0,
+                x: 3.0,
+                y: 2.5,
+                w: 4.0,
+                h: 2.0,
                 fill: { color: colors.accent },
                 line: { color: colors.accent, width: 0 }
             });
 
             slide.addText('Total Changes', {
-                x: 3.75,
-                y: 1.5,
-                w: 2.5,
-                h: 0.3,
-                fontSize: 14,
+                x: 3.0,
+                y: 2.7,
+                w: 4.0,
+                h: 0.5,
+                fontSize: 20,
                 color: colors.white,
                 align: 'center',
                 bold: true
             });
 
             slide.addText(data.totalChanges.toString(), {
-                x: 3.75,
-                y: 1.85,
-                w: 2.5,
-                h: 0.5,
-                fontSize: 32,
+                x: 3.0,
+                y: 3.3,
+                w: 4.0,
+                h: 1.0,
+                fontSize: 60,
                 color: colors.white,
                 align: 'center',
                 bold: true
             });
 
-            // Per product breakdown table - much smaller
+            slide.addText('See next slide for detailed breakdown by product', {
+                x: 0.5,
+                y: 5.5,
+                w: 9,
+                h: 0.4,
+                fontSize: 14,
+                color: colors.text,
+                italic: true,
+                align: 'center'
+            });
+
+            // Slide 4: Per Product Changes Table
+            slide = pptx.addSlide();
+            slide.addText('📈 Changes by Product', {
+                x: 0.5,
+                y: 0.3,
+                w: 9,
+                h: 0.5,
+                fontSize: 28,
+                bold: true,
+                color: colors.primary
+            });
+
+            slide.addText('Last 30 Days - Detailed Breakdown', {
+                x: 0.5,
+                y: 0.85,
+                w: 9,
+                h: 0.3,
+                fontSize: 12,
+                color: colors.text,
+                italic: true
+            });
+
+            // Per product breakdown table
             const tableData = [
                 [
-                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
-                    { text: 'Add', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
-                    { text: 'Del', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
-                    { text: 'Can', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
-                    { text: 'Mod', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
-                    { text: 'Tot', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } }
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Added', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Delivered', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Cancelled', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Modified', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } }
                 ]
             ];
 
-            // Limit to 5 products max
-            const maxTableRows = 5;
+            // Show up to 12 products on this slide
+            const maxTableRows = 12;
             const productKeys = Object.keys(data.productChanges).sort().slice(0, maxTableRows);
             
             productKeys.forEach(product => {
                 const changes = data.productChanges[product];
                 tableData.push([
-                    { text: product, options: { fontSize: 9 } },
-                    { text: changes.added.toString(), options: { fontSize: 9 } },
-                    { text: changes.delivered.toString(), options: { fontSize: 9 } },
-                    { text: changes.cancelled.toString(), options: { fontSize: 9 } },
-                    { text: changes.modified.toString(), options: { fontSize: 9 } },
-                    { text: changes.total.toString(), options: { fontSize: 9 } }
+                    { text: product, options: { fontSize: 10 } },
+                    { text: changes.added.toString(), options: { fontSize: 10 } },
+                    { text: changes.delivered.toString(), options: { fontSize: 10 } },
+                    { text: changes.cancelled.toString(), options: { fontSize: 10 } },
+                    { text: changes.modified.toString(), options: { fontSize: 10 } },
+                    { text: changes.total.toString(), options: { fontSize: 10 } }
                 ]);
             });
             
             slide.addTable(tableData, {
                 x: 0.5,
-                y: 2.6,
+                y: 1.3,
                 w: 9,
-                h: 3.8,
-                colW: [2.5, 1.0, 1.0, 1.0, 1.0, 1.0],
+                colW: [2.0, 1.4, 1.4, 1.4, 1.4, 1.4],
                 border: { pt: 1, color: colors.primary },
                 align: 'center',
                 valign: 'middle',
                 autoPage: false,
-                rowH: 0.35
+                rowH: 0.4
             });
 
             // If more products, add note
             if (Object.keys(data.productChanges).length > maxTableRows) {
                 const remaining = Object.keys(data.productChanges).length - maxTableRows;
-                slide.addText(`Note: Top ${maxTableRows} products shown. ${remaining} more not displayed.`, {
+                slide.addText(`Note: Showing ${maxTableRows} products. ${remaining} more not displayed.`, {
                     x: 0.5,
-                    y: 6.6,
+                    y: 6.8,
                     w: 9,
-                    h: 0.25,
-                    fontSize: 9,
+                    h: 0.3,
+                    fontSize: 10,
                     color: colors.text,
                     italic: true,
                     align: 'center'
                 });
             }
 
-            // Slide 4: Total Items in Each State
+            // Slide 5: Total Items in Each State - Overview
             slide = pptx.addSlide();
             slide.addText('📊 Total Items in Each State', {
                 x: 0.5,
-                y: 0.3,
+                y: 0.5,
                 w: 9,
-                h: 0.6,
-                fontSize: 32,
+                h: 0.8,
+                fontSize: 36,
                 bold: true,
-                color: colors.primary
+                color: colors.primary,
+                align: 'center'
             });
 
-            // Overall status distribution - smaller boxes
-            slide.addText('Overall Status Distribution:', {
+            // Overall status distribution
+            slide.addText('Overall Status Distribution', {
                 x: 0.5,
-                y: 1.0,
+                y: 1.5,
                 w: 9,
-                h: 0.3,
-                fontSize: 14,
+                h: 0.4,
+                fontSize: 18,
                 bold: true,
-                color: colors.text
+                color: colors.text,
+                align: 'center'
             });
 
-            let xPos = 0.8;
-            let yPos = 1.4;
+            let xPos = 0.6;
+            let yPos = 2.1;
             let count = 0;
-            const maxStatusBoxes = 8;
-            const statusKeys = Object.keys(data.overallStates).sort().slice(0, maxStatusBoxes);
+            const statusKeys = Object.keys(data.overallStates).sort();
             
             statusKeys.forEach(state => {
                 const stateCount = data.overallStates[state];
@@ -1485,18 +1520,18 @@ class Dashboard {
                 slide.addShape(pptx.ShapeType.rect, {
                     x: xPos,
                     y: yPos,
-                    w: 1.6,
-                    h: 0.6,
+                    w: 1.7,
+                    h: 0.8,
                     fill: { color: colors.lightGray },
-                    line: { color: colors.primary, width: 1 }
+                    line: { color: colors.primary, width: 2 }
                 });
 
                 slide.addText(state, {
                     x: xPos,
-                    y: yPos + 0.05,
-                    w: 1.6,
-                    h: 0.25,
-                    fontSize: 9,
+                    y: yPos + 0.1,
+                    w: 1.7,
+                    h: 0.3,
+                    fontSize: 11,
                     color: colors.text,
                     align: 'center',
                     bold: true
@@ -1504,49 +1539,67 @@ class Dashboard {
 
                 slide.addText(stateCount.toString(), {
                     x: xPos,
-                    y: yPos + 0.3,
-                    w: 1.6,
-                    h: 0.25,
-                    fontSize: 14,
+                    y: yPos + 0.45,
+                    w: 1.7,
+                    h: 0.3,
+                    fontSize: 18,
                     color: colors.primary,
                     align: 'center',
                     bold: true
                 });
 
-                xPos += 1.8;
+                xPos += 1.9;
                 count++;
                 
                 if (count % 5 === 0) {
-                    xPos = 0.8;
-                    yPos += 0.7;
+                    xPos = 0.6;
+                    yPos += 1.0;
                 }
             });
 
-            // Calculate table start position
-            const numRows = Math.ceil(statusKeys.length / 5);
-            const tableStartY = 1.4 + (numRows * 0.7) + 0.2;
-
-            // Per product status table - with title
-            slide.addText('Per Product Status Distribution:', {
+            slide.addText('See next slide for per-product breakdown', {
                 x: 0.5,
-                y: tableStartY,
+                y: 6.0,
+                w: 9,
+                h: 0.4,
+                fontSize: 14,
+                color: colors.text,
+                italic: true,
+                align: 'center'
+            });
+
+            // Slide 6: Per Product Status Distribution
+            slide = pptx.addSlide();
+            slide.addText('📊 Status by Product', {
+                x: 0.5,
+                y: 0.3,
+                w: 9,
+                h: 0.5,
+                fontSize: 28,
+                bold: true,
+                color: colors.primary
+            });
+
+            slide.addText('Detailed Status Breakdown per Product', {
+                x: 0.5,
+                y: 0.85,
                 w: 9,
                 h: 0.3,
                 fontSize: 12,
-                bold: true,
-                color: colors.text
+                color: colors.text,
+                italic: true
             });
 
-            // Per product status table - smaller
+            // Per product status table
             const statusTableData = [
                 [
-                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } },
-                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } },
-                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } }
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
+                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } }
                 ]
             ];
 
-            const maxProductRows = 4; // Reduced to 4
+            const maxProductRows = 10; // Show up to 10 products
             const productKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
             
             productKeys.forEach(product => {
@@ -1556,35 +1609,32 @@ class Dashboard {
                     .join(', ');
                 
                 statusTableData.push([
-                    { text: product, options: { fontSize: 8 } },
-                    { text: states.total.toString(), options: { fontSize: 8 } },
-                    { text: statusBreakdown, options: { fontSize: 8 } }
+                    { text: product, options: { fontSize: 10 } },
+                    { text: states.total.toString(), options: { fontSize: 10 } },
+                    { text: statusBreakdown, options: { fontSize: 9 } }
                 ]);
             });
-
-            const maxTableHeight = 6.5 - tableStartY - 0.3;
             
             slide.addTable(statusTableData, {
                 x: 0.5,
-                y: tableStartY + 0.35,
+                y: 1.3,
                 w: 9,
-                h: maxTableHeight,
-                colW: [1.5, 0.8, 6.7],
+                colW: [1.8, 1.0, 6.2],
                 border: { pt: 1, color: colors.primary },
                 valign: 'middle',
                 autoPage: false,
-                rowH: 0.3
+                rowH: 0.45
             });
 
             // If more products, add note
             if (Object.keys(data.productStates).length > maxProductRows) {
                 const remaining = Object.keys(data.productStates).length - maxProductRows;
-                slide.addText(`Note: Top ${maxProductRows} products shown. ${remaining} more not displayed.`, {
+                slide.addText(`Note: Showing ${maxProductRows} products. ${remaining} more not displayed.`, {
                     x: 0.5,
-                    y: 6.7,
+                    y: 6.8,
                     w: 9,
-                    h: 0.25,
-                    fontSize: 8,
+                    h: 0.3,
+                    fontSize: 10,
                     color: colors.text,
                     italic: true,
                     align: 'center'
