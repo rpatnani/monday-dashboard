@@ -1362,86 +1362,88 @@ class Dashboard {
                 italic: true
             });
 
-            // Total changes box
+            // Total changes box - smaller and higher
             slide.addShape(pptx.ShapeType.rect, {
-                x: 3.5,
-                y: 1.5,
-                w: 3,
-                h: 1.2,
+                x: 3.75,
+                y: 1.4,
+                w: 2.5,
+                h: 1.0,
                 fill: { color: colors.accent },
                 line: { color: colors.accent, width: 0 }
             });
 
             slide.addText('Total Changes', {
-                x: 3.5,
-                y: 1.6,
-                w: 3,
-                h: 0.4,
-                fontSize: 16,
+                x: 3.75,
+                y: 1.5,
+                w: 2.5,
+                h: 0.3,
+                fontSize: 14,
                 color: colors.white,
                 align: 'center',
                 bold: true
             });
 
             slide.addText(data.totalChanges.toString(), {
-                x: 3.5,
-                y: 2.0,
-                w: 3,
-                h: 0.6,
-                fontSize: 36,
+                x: 3.75,
+                y: 1.85,
+                w: 2.5,
+                h: 0.5,
+                fontSize: 32,
                 color: colors.white,
                 align: 'center',
                 bold: true
             });
 
-            // Per product breakdown table
+            // Per product breakdown table - much smaller
             const tableData = [
                 [
-                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Added', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Delivered', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Cancelled', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Modified', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary } }
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
+                    { text: 'Add', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
+                    { text: 'Del', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
+                    { text: 'Can', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
+                    { text: 'Mod', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } },
+                    { text: 'Tot', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 10 } }
                 ]
             ];
 
-            Object.keys(data.productChanges).sort().forEach(product => {
+            // Limit to 5 products max
+            const maxTableRows = 5;
+            const productKeys = Object.keys(data.productChanges).sort().slice(0, maxTableRows);
+            
+            productKeys.forEach(product => {
                 const changes = data.productChanges[product];
                 tableData.push([
-                    product,
-                    changes.added.toString(),
-                    changes.delivered.toString(),
-                    changes.cancelled.toString(),
-                    changes.modified.toString(),
-                    changes.total.toString()
+                    { text: product, options: { fontSize: 9 } },
+                    { text: changes.added.toString(), options: { fontSize: 9 } },
+                    { text: changes.delivered.toString(), options: { fontSize: 9 } },
+                    { text: changes.cancelled.toString(), options: { fontSize: 9 } },
+                    { text: changes.modified.toString(), options: { fontSize: 9 } },
+                    { text: changes.total.toString(), options: { fontSize: 9 } }
                 ]);
             });
-
-            // Only add table if it fits on the slide
-            const maxTableRows = 8; // Limit rows to prevent overflow
-            const limitedTableData = [tableData[0], ...tableData.slice(1, maxTableRows + 1)];
             
-            slide.addTable(limitedTableData, {
+            slide.addTable(tableData, {
                 x: 0.5,
-                y: 3.0,
+                y: 2.6,
                 w: 9,
-                h: 4.0,
-                fontSize: 11,
+                h: 3.8,
+                colW: [2.5, 1.0, 1.0, 1.0, 1.0, 1.0],
                 border: { pt: 1, color: colors.primary },
                 align: 'center',
                 valign: 'middle',
-                autoPage: false
+                autoPage: false,
+                rowH: 0.35
             });
 
             // If more products, add note
-            if (tableData.length > maxTableRows + 1) {
-                slide.addText(`Note: Showing top ${maxTableRows} products. ${tableData.length - maxTableRows - 1} more products not shown.`, {
+            if (Object.keys(data.productChanges).length > maxTableRows) {
+                const remaining = Object.keys(data.productChanges).length - maxTableRows;
+                slide.addText(`Note: Top ${maxTableRows} products shown. ${remaining} more not displayed.`, {
                     x: 0.5,
-                    y: 7.2,
+                    y: 6.6,
                     w: 9,
-                    h: 0.3,
-                    fontSize: 10,
+                    h: 0.25,
+                    fontSize: 9,
                     color: colors.text,
                     italic: true,
                     align: 'center'
@@ -1460,21 +1462,21 @@ class Dashboard {
                 color: colors.primary
             });
 
-            // Overall status distribution
+            // Overall status distribution - smaller boxes
             slide.addText('Overall Status Distribution:', {
                 x: 0.5,
                 y: 1.0,
                 w: 9,
-                h: 0.4,
-                fontSize: 16,
+                h: 0.3,
+                fontSize: 14,
                 bold: true,
                 color: colors.text
             });
 
-            let xPos = 1.0;
-            let yPos = 1.5;
+            let xPos = 0.8;
+            let yPos = 1.4;
             let count = 0;
-            const maxStatusBoxes = 8; // Limit to prevent overflow
+            const maxStatusBoxes = 8;
             const statusKeys = Object.keys(data.overallStates).sort().slice(0, maxStatusBoxes);
             
             statusKeys.forEach(state => {
@@ -1483,8 +1485,8 @@ class Dashboard {
                 slide.addShape(pptx.ShapeType.rect, {
                     x: xPos,
                     y: yPos,
-                    w: 1.8,
-                    h: 0.7,
+                    w: 1.6,
+                    h: 0.6,
                     fill: { color: colors.lightGray },
                     line: { color: colors.primary, width: 1 }
                 });
@@ -1492,9 +1494,9 @@ class Dashboard {
                 slide.addText(state, {
                     x: xPos,
                     y: yPos + 0.05,
-                    w: 1.8,
-                    h: 0.3,
-                    fontSize: 10,
+                    w: 1.6,
+                    h: 0.25,
+                    fontSize: 9,
                     color: colors.text,
                     align: 'center',
                     bold: true
@@ -1502,27 +1504,27 @@ class Dashboard {
 
                 slide.addText(stateCount.toString(), {
                     x: xPos,
-                    y: yPos + 0.35,
-                    w: 1.8,
-                    h: 0.3,
-                    fontSize: 16,
+                    y: yPos + 0.3,
+                    w: 1.6,
+                    h: 0.25,
+                    fontSize: 14,
                     color: colors.primary,
                     align: 'center',
                     bold: true
                 });
 
-                xPos += 2.0;
+                xPos += 1.8;
                 count++;
                 
-                if (count % 4 === 0) {
-                    xPos = 1.0;
-                    yPos += 0.8;
+                if (count % 5 === 0) {
+                    xPos = 0.8;
+                    yPos += 0.7;
                 }
             });
 
-            // Calculate table start position based on number of status boxes
-            const numRows = Math.ceil(statusKeys.length / 4);
-            const tableStartY = 1.5 + (numRows * 0.8) + 0.3;
+            // Calculate table start position
+            const numRows = Math.ceil(statusKeys.length / 5);
+            const tableStartY = 1.4 + (numRows * 0.7) + 0.2;
 
             // Per product status table - with title
             slide.addText('Per Product Status Distribution:', {
@@ -1530,21 +1532,21 @@ class Dashboard {
                 y: tableStartY,
                 w: 9,
                 h: 0.3,
-                fontSize: 14,
+                fontSize: 12,
                 bold: true,
                 color: colors.text
             });
 
-            // Per product status table
+            // Per product status table - smaller
             const statusTableData = [
                 [
-                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary } }
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } },
+                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 9 } }
                 ]
             ];
 
-            const maxProductRows = 6; // Limit to prevent overflow
+            const maxProductRows = 4; // Reduced to 4
             const productKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
             
             productKeys.forEach(product => {
@@ -1554,34 +1556,35 @@ class Dashboard {
                     .join(', ');
                 
                 statusTableData.push([
-                    product,
-                    states.total.toString(),
-                    statusBreakdown
+                    { text: product, options: { fontSize: 8 } },
+                    { text: states.total.toString(), options: { fontSize: 8 } },
+                    { text: statusBreakdown, options: { fontSize: 8 } }
                 ]);
             });
 
-            const availableHeight = 7.5 - tableStartY - 0.4;
+            const maxTableHeight = 6.5 - tableStartY - 0.3;
             
             slide.addTable(statusTableData, {
                 x: 0.5,
-                y: tableStartY + 0.4,
+                y: tableStartY + 0.35,
                 w: 9,
-                h: availableHeight,
-                fontSize: 10,
+                h: maxTableHeight,
+                colW: [1.5, 0.8, 6.7],
                 border: { pt: 1, color: colors.primary },
                 valign: 'middle',
-                autoPage: false
+                autoPage: false,
+                rowH: 0.3
             });
 
             // If more products, add note
             if (Object.keys(data.productStates).length > maxProductRows) {
                 const remaining = Object.keys(data.productStates).length - maxProductRows;
-                slide.addText(`Note: Showing top ${maxProductRows} products. ${remaining} more not shown.`, {
+                slide.addText(`Note: Top ${maxProductRows} products shown. ${remaining} more not displayed.`, {
                     x: 0.5,
-                    y: 7.2,
+                    y: 6.7,
                     w: 9,
-                    h: 0.3,
-                    fontSize: 9,
+                    h: 0.25,
+                    fontSize: 8,
                     color: colors.text,
                     italic: true,
                     align: 'center'
