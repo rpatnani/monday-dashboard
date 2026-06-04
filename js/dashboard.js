@@ -1418,15 +1418,35 @@ class Dashboard {
                 ]);
             });
 
-            slide.addTable(tableData, {
+            // Only add table if it fits on the slide
+            const maxTableRows = 8; // Limit rows to prevent overflow
+            const limitedTableData = [tableData[0], ...tableData.slice(1, maxTableRows + 1)];
+            
+            slide.addTable(limitedTableData, {
                 x: 0.5,
                 y: 3.0,
                 w: 9,
-                fontSize: 12,
+                h: 4.0,
+                fontSize: 11,
                 border: { pt: 1, color: colors.primary },
                 align: 'center',
-                valign: 'middle'
+                valign: 'middle',
+                autoPage: false
             });
+
+            // If more products, add note
+            if (tableData.length > maxTableRows + 1) {
+                slide.addText(`Note: Showing top ${maxTableRows} products. ${tableData.length - maxTableRows - 1} more products not shown.`, {
+                    x: 0.5,
+                    y: 7.2,
+                    w: 9,
+                    h: 0.3,
+                    fontSize: 10,
+                    color: colors.text,
+                    italic: true,
+                    align: 'center'
+                });
+            }
 
             // Slide 4: Total Items in Each State
             slide = pptx.addSlide();
@@ -1446,33 +1466,35 @@ class Dashboard {
                 y: 1.0,
                 w: 9,
                 h: 0.4,
-                fontSize: 18,
+                fontSize: 16,
                 bold: true,
                 color: colors.text
             });
 
             let xPos = 1.0;
-            let yPos = 1.6;
+            let yPos = 1.5;
             let count = 0;
+            const maxStatusBoxes = 8; // Limit to prevent overflow
+            const statusKeys = Object.keys(data.overallStates).sort().slice(0, maxStatusBoxes);
             
-            Object.keys(data.overallStates).sort().forEach(state => {
+            statusKeys.forEach(state => {
                 const stateCount = data.overallStates[state];
                 
                 slide.addShape(pptx.ShapeType.rect, {
                     x: xPos,
                     y: yPos,
                     w: 1.8,
-                    h: 0.8,
+                    h: 0.7,
                     fill: { color: colors.lightGray },
                     line: { color: colors.primary, width: 1 }
                 });
 
                 slide.addText(state, {
                     x: xPos,
-                    y: yPos + 0.1,
+                    y: yPos + 0.05,
                     w: 1.8,
                     h: 0.3,
-                    fontSize: 12,
+                    fontSize: 10,
                     color: colors.text,
                     align: 'center',
                     bold: true
@@ -1480,10 +1502,10 @@ class Dashboard {
 
                 slide.addText(stateCount.toString(), {
                     x: xPos,
-                    y: yPos + 0.4,
+                    y: yPos + 0.35,
                     w: 1.8,
                     h: 0.3,
-                    fontSize: 18,
+                    fontSize: 16,
                     color: colors.primary,
                     align: 'center',
                     bold: true
@@ -1494,20 +1516,38 @@ class Dashboard {
                 
                 if (count % 4 === 0) {
                     xPos = 1.0;
-                    yPos += 1.0;
+                    yPos += 0.8;
                 }
+            });
+
+            // Calculate table start position based on number of status boxes
+            const numRows = Math.ceil(statusKeys.length / 4);
+            const tableStartY = 1.5 + (numRows * 0.8) + 0.3;
+
+            // Per product status table - with title
+            slide.addText('Per Product Status Distribution:', {
+                x: 0.5,
+                y: tableStartY,
+                w: 9,
+                h: 0.3,
+                fontSize: 14,
+                bold: true,
+                color: colors.text
             });
 
             // Per product status table
             const statusTableData = [
                 [
                     { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary } },
-                    { text: 'Total Items', options: { bold: true, color: colors.white, fill: colors.primary } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary } },
                     { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary } }
                 ]
             ];
 
-            Object.keys(data.productStates).sort().forEach(product => {
+            const maxProductRows = 6; // Limit to prevent overflow
+            const productKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
+            
+            productKeys.forEach(product => {
                 const states = data.productStates[product];
                 const statusBreakdown = Object.keys(states.states)
                     .map(s => `${s}: ${states.states[s]}`)
@@ -1520,14 +1560,33 @@ class Dashboard {
                 ]);
             });
 
+            const availableHeight = 7.5 - tableStartY - 0.4;
+            
             slide.addTable(statusTableData, {
                 x: 0.5,
-                y: 3.5,
+                y: tableStartY + 0.4,
                 w: 9,
-                fontSize: 11,
+                h: availableHeight,
+                fontSize: 10,
                 border: { pt: 1, color: colors.primary },
-                valign: 'middle'
+                valign: 'middle',
+                autoPage: false
             });
+
+            // If more products, add note
+            if (Object.keys(data.productStates).length > maxProductRows) {
+                const remaining = Object.keys(data.productStates).length - maxProductRows;
+                slide.addText(`Note: Showing top ${maxProductRows} products. ${remaining} more not shown.`, {
+                    x: 0.5,
+                    y: 7.2,
+                    w: 9,
+                    h: 0.3,
+                    fontSize: 9,
+                    color: colors.text,
+                    italic: true,
+                    align: 'center'
+                });
+            }
 
             // Save presentation
             const fileName = `MOR_Report_${new Date().toISOString().split('T')[0]}.pptx`;
