@@ -1600,9 +1600,9 @@ class Dashboard {
             ];
 
             const maxProductRows = 10; // Show up to 10 products
-            const productKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
+            const productStateKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
             
-            productKeys.forEach(product => {
+            productStateKeys.forEach(product => {
                 const states = data.productStates[product];
                 const statusBreakdown = Object.keys(states.states)
                     .map(s => `${s}: ${states.states[s]}`)
