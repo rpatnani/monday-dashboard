@@ -1222,135 +1222,276 @@ class Dashboard {
             pptx.subject = 'Monthly Operating Review';
             pptx.title = 'MOR Report';
 
-            // Define colors
+            // IBM Carbon Design System Colors
             const colors = {
-                primary: '667eea',
-                secondary: '764ba2',
-                accent: '4CAF50',
-                text: '333333',
-                lightGray: 'f5f5f5',
-                white: 'FFFFFF'
+                // IBM Blue - Primary interactive color
+                primary: '0f62fe',
+                // IBM Gray 100 - Darkest gray for text
+                text: '161616',
+                // IBM Gray 70 - Secondary text
+                textSecondary: '525252',
+                // IBM Gray 10 - Light background
+                background: 'f4f4f4',
+                // IBM Gray 20 - Card background
+                cardBackground: 'e0e0e0',
+                // White
+                white: 'FFFFFF',
+                // IBM Green - Success/positive
+                success: '24a148',
+                // IBM Red - Error/negative
+                error: 'da1e28',
+                // IBM Yellow - Warning
+                warning: 'f1c21b',
+                // IBM Blue 60 - Links and interactive elements
+                interactive: '0f62fe'
             };
 
-            // Slide 1: Title Slide
+            // Slide 1: Title Slide - Professional IBM Carbon Style
             let slide = pptx.addSlide();
-            slide.background = { color: colors.primary };
+            slide.background = { color: colors.white };
             
-            slide.addText('Monthly Operating Review (MOR)', {
-                x: 0.5,
-                y: 1.5,
-                w: 9,
-                h: 1.5,
-                fontSize: 44,
-                bold: true,
-                color: colors.white,
-                align: 'center'
+            // IBM Blue accent bar at top
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 0,
+                y: 0,
+                w: 10,
+                h: 0.15,
+                fill: { color: colors.primary },
+                line: { type: 'none' }
             });
             
-            slide.addText(data.month, {
+            // Company/IBM branding text in top left
+            slide.addText('IBM', {
                 x: 0.5,
-                y: 3.0,
-                w: 9,
-                h: 0.8,
-                fontSize: 28,
-                color: colors.white,
-                align: 'center'
-            });
-            
-            slide.addText(`Generated: ${new Date().toLocaleDateString()}`, {
-                x: 0.5,
-                y: 4.0,
-                w: 9,
+                y: 0.4,
+                w: 2,
                 h: 0.5,
-                fontSize: 16,
-                color: colors.white,
-                align: 'center',
-                italic: true
-            });
-
-            // Slide 2: Top 3 Highlights (Most Important)
-            slide = pptx.addSlide();
-            slide.addText('🌟 Top 3 Highlights of the Month', {
-                x: 0.5,
-                y: 0.3,
-                w: 9,
-                h: 0.6,
-                fontSize: 32,
+                fontSize: 28,
                 bold: true,
-                color: colors.primary
-            });
-
-            slide.addText('Based on delivered items with highest impact', {
-                x: 0.5,
-                y: 0.9,
-                w: 9,
-                h: 0.4,
-                fontSize: 14,
                 color: colors.text,
-                italic: true
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            // Main title - centered and prominent
+            slide.addText('Monthly Operating Review', {
+                x: 1,
+                y: 2.2,
+                w: 8,
+                h: 1.2,
+                fontSize: 54,
+                bold: false,
+                color: colors.text,
+                align: 'center',
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            // Month subtitle
+            slide.addText(data.month, {
+                x: 1,
+                y: 3.5,
+                w: 8,
+                h: 0.6,
+                fontSize: 28,
+                color: colors.textSecondary,
+                align: 'center',
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            // Generated date at bottom
+            slide.addText(`Generated: ${new Date().toLocaleDateString()}`, {
+                x: 1,
+                y: 5.2,
+                w: 8,
+                h: 0.4,
+                fontSize: 12,
+                color: colors.textSecondary,
+                align: 'center',
+                fontFace: 'IBM Plex Sans'
             });
 
+            // Slide 2+: Top 3 Highlights (Most Important) - IBM Carbon Style
+            // Split into multiple slides if needed - max 2 highlights per slide to prevent overlap
             if (data.top3Highlights.length === 0) {
+                slide = pptx.addSlide();
+                slide.background = { color: colors.white };
+                
+                // Blue accent bar
+                slide.addShape(pptx.ShapeType.rect, {
+                    x: 0,
+                    y: 0,
+                    w: 10,
+                    h: 0.1,
+                    fill: { color: colors.primary },
+                    line: { type: 'none' }
+                });
+                
+                slide.addText('Top 3 Highlights of the Month', {
+                    x: 0.5,
+                    y: 0.5,
+                    w: 9,
+                    h: 0.6,
+                    fontSize: 42,
+                    bold: false,
+                    color: colors.text,
+                    fontFace: 'IBM Plex Sans'
+                });
+
+                slide.addText('Based on delivered items with highest impact', {
+                    x: 0.5,
+                    y: 1.2,
+                    w: 9,
+                    h: 0.4,
+                    fontSize: 14,
+                    color: colors.textSecondary,
+                    fontFace: 'IBM Plex Sans'
+                });
+
                 slide.addText('No items delivered this month yet', {
                     x: 1.5,
                     y: 2.5,
                     w: 7,
                     h: 1,
                     fontSize: 20,
-                    color: colors.text,
-                    align: 'center'
+                    color: colors.textSecondary,
+                    align: 'center',
+                    fontFace: 'IBM Plex Sans'
                 });
             } else {
                 const medals = ['🥇', '🥈', '🥉'];
-                let yPos = 1.5;
+                const highlightsPerSlide = 1; // 1 highlight per slide for maximum clarity
                 
-                data.top3Highlights.forEach((highlight, index) => {
-                    // Highlight box
+                // Split highlights into chunks (1 per slide)
+                for (let i = 0; i < data.top3Highlights.length; i += highlightsPerSlide) {
+                    slide = pptx.addSlide();
+                    slide.background = { color: colors.white };
+                    
+                    // Blue accent bar
                     slide.addShape(pptx.ShapeType.rect, {
-                        x: 0.8,
-                        y: yPos,
-                        w: 8.4,
-                        h: 1.3,
-                        fill: { color: colors.lightGray },
-                        line: { color: colors.primary, width: 2 }
+                        x: 0,
+                        y: 0,
+                        w: 10,
+                        h: 0.1,
+                        fill: { color: colors.primary },
+                        line: { type: 'none' }
+                    });
+                    
+                    // Add title to each slide
+                    const slideNum = Math.floor(i / highlightsPerSlide) + 1;
+                    const totalSlides = Math.ceil(data.top3Highlights.length / highlightsPerSlide);
+                    const titleText = totalSlides > 1
+                        ? `Top 3 Highlights of the Month (${slideNum}/${totalSlides})`
+                        : 'Top 3 Highlights of the Month';
+                    
+                    slide.addText(titleText, {
+                        x: 0.5,
+                        y: 0.5,
+                        w: 9,
+                        h: 0.5,
+                        fontSize: 32,
+                        bold: false,
+                        color: colors.text,
+                        fontFace: 'IBM Plex Sans'
                     });
 
-                    // Medal and title
-                    slide.addText(`${medals[index]} ${highlight.name}`, {
-                        x: 1.0,
-                        y: yPos + 0.15,
-                        w: 8.0,
-                        h: 0.4,
-                        fontSize: 18,
-                        bold: true,
-                        color: colors.text
+                    slide.addText('Based on delivered items with highest impact', {
+                        x: 0.5,
+                        y: 1.1,
+                        w: 9,
+                        h: 0.3,
+                        fontSize: 12,
+                        color: colors.textSecondary,
+                        fontFace: 'IBM Plex Sans'
                     });
 
-                    // Details
-                    slide.addText(`Product: ${highlight.product}  |  Impact: ${highlight.impact}  |  Delivered: ${highlight.date}`, {
-                        x: 1.0,
-                        y: yPos + 0.6,
-                        w: 8.0,
-                        h: 0.4,
-                        fontSize: 14,
-                        color: colors.text
-                    });
+                    const highlightsOnThisSlide = data.top3Highlights.slice(i, i + highlightsPerSlide);
+                    
+                    highlightsOnThisSlide.forEach((highlight, localIndex) => {
+                        const globalIndex = i + localIndex;
+                        
+                        // Highlight box - IBM Carbon style, properly sized
+                        slide.addShape(pptx.ShapeType.rect, {
+                            x: 0.5,
+                            y: 1.8,
+                            w: 9,
+                            h: 3.5,
+                            fill: { color: colors.background },
+                            line: { color: colors.cardBackground, width: 1 }
+                        });
+                        
+                        // Left accent bar (IBM Blue)
+                        slide.addShape(pptx.ShapeType.rect, {
+                            x: 0.5,
+                            y: 1.8,
+                            w: 0.1,
+                            h: 3.5,
+                            fill: { color: colors.primary },
+                            line: { type: 'none' }
+                        });
 
-                    yPos += 1.5;
-                });
+                        // Medal and title
+                        slide.addText(`${medals[globalIndex]} ${highlight.name}`, {
+                            x: 0.9,
+                            y: 2.0,
+                            w: 8.4,
+                            h: 0.7,
+                            fontSize: 16,
+                            bold: true,
+                            color: colors.text,
+                            valign: 'top',
+                            wrap: true,
+                            fontFace: 'IBM Plex Sans'
+                        });
+
+                        // Description - ample space for text
+                        slide.addText(highlight.description || '', {
+                            x: 0.9,
+                            y: 2.8,
+                            w: 8.4,
+                            h: 1.9,
+                            fontSize: 12,
+                            color: colors.textSecondary,
+                            valign: 'top',
+                            wrap: true,
+                            fontFace: 'IBM Plex Sans'
+                        });
+
+                        // Details at bottom
+                        slide.addText(`Product: ${highlight.product}  |  Impact: ${highlight.impact}  |  Delivered: ${highlight.date}`, {
+                            x: 0.9,
+                            y: 4.9,
+                            w: 8.4,
+                            h: 0.3,
+                            fontSize: 11,
+                            color: colors.textSecondary,
+                            fontFace: 'IBM Plex Sans'
+                        });
+                    });
+                }
             }
 
-            // Slide 3: Last Month Changes/Updates - Summary Only
+            // Slide 3: Last Month Changes/Updates - IBM Carbon Style
             slide = pptx.addSlide();
-            slide.addText('📈 Last Month Changes/Updates', {
+            slide.background = { color: colors.white };
+            
+            // Blue accent bar
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 0,
+                y: 0,
+                w: 10,
+                h: 0.1,
+                fill: { color: colors.primary },
+                line: { type: 'none' }
+            });
+            
+            slide.addText('Last Month Changes/Updates', {
                 x: 0.5,
                 y: 0.5,
                 w: 9,
                 h: 0.8,
-                fontSize: 36,
-                bold: true,
-                color: colors.primary,
-                align: 'center'
+                fontSize: 42,
+                bold: false,
+                color: colors.text,
+                fontFace: 'IBM Plex Sans'
             });
 
             slide.addText('Last 30 Days', {
@@ -1358,20 +1499,19 @@ class Dashboard {
                 y: 1.3,
                 w: 9,
                 h: 0.4,
-                fontSize: 16,
-                color: colors.text,
-                italic: true,
-                align: 'center'
+                fontSize: 14,
+                color: colors.textSecondary,
+                fontFace: 'IBM Plex Sans'
             });
 
-            // Total changes box - centered and larger
+            // Total changes box - IBM Carbon style
             slide.addShape(pptx.ShapeType.rect, {
                 x: 3.0,
                 y: 2.5,
                 w: 4.0,
                 h: 2.0,
-                fill: { color: colors.accent },
-                line: { color: colors.accent, width: 0 }
+                fill: { color: colors.primary },
+                line: { type: 'none' }
             });
 
             slide.addText('Total Changes', {
@@ -1379,10 +1519,11 @@ class Dashboard {
                 y: 2.7,
                 w: 4.0,
                 h: 0.5,
-                fontSize: 20,
+                fontSize: 18,
                 color: colors.white,
                 align: 'center',
-                bold: true
+                bold: false,
+                fontFace: 'IBM Plex Sans'
             });
 
             slide.addText(data.totalChanges.toString(), {
@@ -1390,10 +1531,11 @@ class Dashboard {
                 y: 3.3,
                 w: 4.0,
                 h: 1.0,
-                fontSize: 60,
+                fontSize: 72,
                 color: colors.white,
                 align: 'center',
-                bold: true
+                bold: false,
+                fontFace: 'IBM Plex Sans'
             });
 
             slide.addText('See next slide for detailed breakdown by product', {
@@ -1402,9 +1544,8 @@ class Dashboard {
                 w: 9,
                 h: 0.4,
                 fontSize: 14,
-                color: colors.text,
-                italic: true,
-                align: 'center'
+                color: colors.textSecondary,
+                fontFace: 'IBM Plex Sans'
             });
 
             // Slide 4: Per Product Changes Table
