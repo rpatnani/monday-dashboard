@@ -1625,68 +1625,93 @@ class Dashboard {
                 });
             }
 
-            // Slide 5: Total Items in Each State - Overview
+            // Slide 5: Total Items in Each State - Overview (IBM Carbon Style)
             slide = pptx.addSlide();
-            slide.addText('📊 Total Items in Each State', {
+            slide.background = { color: colors.white };
+            
+            // Blue accent bar
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 0,
+                y: 0,
+                w: 10,
+                h: 0.1,
+                fill: { color: colors.primary },
+                line: { type: 'none' }
+            });
+            
+            slide.addText('Total Items in Each State', {
                 x: 0.5,
                 y: 0.5,
                 w: 9,
-                h: 0.8,
-                fontSize: 36,
-                bold: true,
-                color: colors.primary,
-                align: 'center'
+                h: 0.6,
+                fontSize: 32,
+                bold: false,
+                color: colors.text,
+                fontFace: 'IBM Plex Sans'
             });
 
             // Overall status distribution
             slide.addText('Overall Status Distribution', {
                 x: 0.5,
-                y: 1.5,
+                y: 1.2,
                 w: 9,
                 h: 0.4,
-                fontSize: 18,
-                bold: true,
-                color: colors.text,
-                align: 'center'
+                fontSize: 16,
+                bold: false,
+                color: colors.textSecondary,
+                fontFace: 'IBM Plex Sans'
             });
 
             let xPos = 0.6;
-            let yPos = 2.1;
+            let yPos = 1.9;
             let count = 0;
             const statusKeys = Object.keys(data.overallStates).sort();
             
             statusKeys.forEach(state => {
                 const stateCount = data.overallStates[state];
                 
+                // Card with IBM Carbon styling
                 slide.addShape(pptx.ShapeType.rect, {
                     x: xPos,
                     y: yPos,
                     w: 1.7,
-                    h: 0.8,
-                    fill: { color: colors.lightGray },
-                    line: { color: colors.primary, width: 2 }
+                    h: 0.9,
+                    fill: { color: colors.background },
+                    line: { color: colors.cardBackground, width: 1 }
+                });
+                
+                // Left accent bar
+                slide.addShape(pptx.ShapeType.rect, {
+                    x: xPos,
+                    y: yPos,
+                    w: 0.08,
+                    h: 0.9,
+                    fill: { color: colors.primary },
+                    line: { type: 'none' }
                 });
 
                 slide.addText(state, {
-                    x: xPos,
-                    y: yPos + 0.1,
-                    w: 1.7,
+                    x: xPos + 0.1,
+                    y: yPos + 0.15,
+                    w: 1.5,
                     h: 0.3,
-                    fontSize: 11,
-                    color: colors.text,
+                    fontSize: 10,
+                    color: colors.textSecondary,
                     align: 'center',
-                    bold: true
+                    bold: false,
+                    fontFace: 'IBM Plex Sans'
                 });
 
                 slide.addText(stateCount.toString(), {
-                    x: xPos,
-                    y: yPos + 0.45,
-                    w: 1.7,
-                    h: 0.3,
-                    fontSize: 18,
-                    color: colors.primary,
+                    x: xPos + 0.1,
+                    y: yPos + 0.5,
+                    w: 1.5,
+                    h: 0.35,
+                    fontSize: 24,
+                    color: colors.text,
                     align: 'center',
-                    bold: true
+                    bold: false,
+                    fontFace: 'IBM Plex Sans'
                 });
 
                 xPos += 1.9;
@@ -1694,77 +1719,93 @@ class Dashboard {
                 
                 if (count % 5 === 0) {
                     xPos = 0.6;
-                    yPos += 1.0;
+                    yPos += 1.1;
                 }
             });
 
             slide.addText('See next slide for per-product breakdown', {
                 x: 0.5,
-                y: 6.0,
+                y: 6.5,
                 w: 9,
-                h: 0.4,
-                fontSize: 14,
-                color: colors.text,
-                italic: true,
+                h: 0.3,
+                fontSize: 12,
+                color: colors.textSecondary,
+                fontFace: 'IBM Plex Sans',
                 align: 'center'
             });
 
-            // Slide 6: Per Product Status Distribution
+            // Slide 6: Per Product Status Distribution (IBM Carbon Style)
             slide = pptx.addSlide();
-            slide.addText('📊 Status by Product', {
+            slide.background = { color: colors.white };
+            
+            // Blue accent bar
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 0,
+                y: 0,
+                w: 10,
+                h: 0.1,
+                fill: { color: colors.primary },
+                line: { type: 'none' }
+            });
+            
+            slide.addText('Status by Product', {
                 x: 0.5,
-                y: 0.3,
+                y: 0.5,
                 w: 9,
                 h: 0.5,
-                fontSize: 28,
-                bold: true,
-                color: colors.primary
+                fontSize: 32,
+                bold: false,
+                color: colors.text,
+                fontFace: 'IBM Plex Sans'
             });
 
             slide.addText('Detailed Status Breakdown per Product', {
                 x: 0.5,
-                y: 0.85,
+                y: 1.1,
                 w: 9,
                 h: 0.3,
                 fontSize: 12,
-                color: colors.text,
-                italic: true
+                color: colors.textSecondary,
+                fontFace: 'IBM Plex Sans'
             });
 
-            // Per product status table
+            // Per product status table with IBM Carbon colors
             const statusTableData = [
                 [
-                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
-                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } },
-                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 11 } }
+                    { text: 'Product', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 12, fontFace: 'IBM Plex Sans' } },
+                    { text: 'Total', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 12, fontFace: 'IBM Plex Sans' } },
+                    { text: 'Status Breakdown', options: { bold: true, color: colors.white, fill: colors.primary, fontSize: 12, fontFace: 'IBM Plex Sans' } }
                 ]
             ];
 
             const maxProductRows = 10; // Show up to 10 products
             const productStateKeys = Object.keys(data.productStates).sort().slice(0, maxProductRows);
             
-            productStateKeys.forEach(product => {
+            productStateKeys.forEach((product, index) => {
                 const states = data.productStates[product];
                 const statusBreakdown = Object.keys(states.states)
                     .map(s => `${s}: ${states.states[s]}`)
                     .join(', ');
                 
+                // Alternate row colors for better readability
+                const rowFill = index % 2 === 0 ? colors.white : colors.background;
+                
                 statusTableData.push([
-                    { text: product, options: { fontSize: 10 } },
-                    { text: states.total.toString(), options: { fontSize: 10 } },
-                    { text: statusBreakdown, options: { fontSize: 9 } }
+                    { text: product, options: { fontSize: 11, fill: rowFill, color: colors.text, fontFace: 'IBM Plex Sans' } },
+                    { text: states.total.toString(), options: { fontSize: 11, fill: rowFill, color: colors.text, fontFace: 'IBM Plex Sans', bold: true } },
+                    { text: statusBreakdown, options: { fontSize: 10, fill: rowFill, color: colors.textSecondary, fontFace: 'IBM Plex Sans' } }
                 ]);
             });
             
             slide.addTable(statusTableData, {
                 x: 0.5,
-                y: 1.3,
+                y: 1.6,
                 w: 9,
-                colW: [1.8, 1.0, 6.2],
-                border: { pt: 1, color: colors.primary },
+                colW: [2.0, 1.0, 6.0],
+                border: { pt: 1, color: colors.cardBackground },
                 valign: 'middle',
                 autoPage: false,
-                rowH: 0.45
+                rowH: 0.5
             });
 
             // If more products, add note
