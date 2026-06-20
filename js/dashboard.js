@@ -1309,46 +1309,59 @@ class Dashboard {
                 fontFace: 'IBM Plex Sans'
             });
 
-            // Slide 2: Executive Summary for Management
+            // Slide 2: Executive Summary for Management - Professional Layout
             slide = pptx.addSlide();
             slide.background = { color: colors.white };
             
-            // Blue accent bar
+            // Blue accent bar at top
             slide.addShape(pptx.ShapeType.rect, {
                 x: 0,
                 y: 0,
                 w: 10,
-                h: 0.1,
+                h: 0.15,
                 fill: { color: colors.primary },
                 line: { type: 'none' }
             });
             
+            // Title with professional styling
             slide.addText('Executive Summary', {
                 x: 0.5,
-                y: 0.5,
-                w: 9,
-                h: 0.6,
-                fontSize: 36,
-                bold: false,
+                y: 0.4,
+                w: 6,
+                h: 0.7,
+                fontSize: 44,
+                bold: true,
                 color: colors.text,
                 fontFace: 'IBM Plex Sans'
             });
             
+            // Month/Period in top right
             slide.addText(data.month, {
-                x: 0.5,
-                y: 1.1,
-                w: 9,
-                h: 0.3,
-                fontSize: 16,
+                x: 7,
+                y: 0.5,
+                w: 2.5,
+                h: 0.5,
+                fontSize: 18,
                 color: colors.textSecondary,
+                align: 'right',
                 fontFace: 'IBM Plex Sans'
             });
 
-            // Key Metrics Section
-            const metricsY = 1.7;
-            const metricBoxWidth = 2.8;
-            const metricBoxHeight = 1.3;
-            const metricSpacing = 3.1;
+            // Horizontal divider line
+            slide.addShape(pptx.ShapeType.rect, {
+                x: 0.5,
+                y: 1.3,
+                w: 9,
+                h: 0.02,
+                fill: { color: colors.cardBackground },
+                line: { type: 'none' }
+            });
+
+            // Key Metrics Section - Larger, more prominent
+            const metricsY = 1.6;
+            const metricBoxWidth = 2.9;
+            const metricBoxHeight = 1.5;
+            const metricSpacing = 3.15;
             
             // Total Changes Metric
             slide.addShape(pptx.ShapeType.rect, {
@@ -1360,26 +1373,27 @@ class Dashboard {
                 line: { type: 'none' }
             });
             
-            slide.addText('Total Changes', {
+            slide.addText('TOTAL CHANGES', {
                 x: 0.5,
-                y: metricsY + 0.2,
+                y: metricsY + 0.25,
                 w: metricBoxWidth,
                 h: 0.3,
-                fontSize: 12,
+                fontSize: 11,
                 color: colors.white,
                 align: 'center',
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
             
             slide.addText(data.totalChanges.toString(), {
                 x: 0.5,
-                y: metricsY + 0.6,
+                y: metricsY + 0.65,
                 w: metricBoxWidth,
-                h: 0.5,
-                fontSize: 42,
+                h: 0.6,
+                fontSize: 48,
                 color: colors.white,
                 align: 'center',
-                bold: false,
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
 
@@ -1394,26 +1408,27 @@ class Dashboard {
                 line: { type: 'none' }
             });
             
-            slide.addText('Items Delivered', {
+            slide.addText('ITEMS DELIVERED', {
                 x: 0.5 + metricSpacing,
-                y: metricsY + 0.2,
+                y: metricsY + 0.25,
                 w: metricBoxWidth,
                 h: 0.3,
-                fontSize: 12,
+                fontSize: 11,
                 color: colors.white,
                 align: 'center',
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
             
             slide.addText(deliveredCount.toString(), {
                 x: 0.5 + metricSpacing,
-                y: metricsY + 0.6,
+                y: metricsY + 0.65,
                 w: metricBoxWidth,
-                h: 0.5,
-                fontSize: 42,
+                h: 0.6,
+                fontSize: 48,
                 color: colors.white,
                 align: 'center',
-                bold: false,
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
 
@@ -1428,112 +1443,190 @@ class Dashboard {
                 line: { type: 'none' }
             });
             
-            slide.addText('Active Products', {
+            slide.addText('ACTIVE PRODUCTS', {
                 x: 0.5 + (metricSpacing * 2),
-                y: metricsY + 0.2,
+                y: metricsY + 0.25,
                 w: metricBoxWidth,
                 h: 0.3,
-                fontSize: 12,
+                fontSize: 11,
                 color: colors.white,
                 align: 'center',
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
             
             slide.addText(totalProducts.toString(), {
                 x: 0.5 + (metricSpacing * 2),
-                y: metricsY + 0.6,
+                y: metricsY + 0.65,
                 w: metricBoxWidth,
-                h: 0.5,
-                fontSize: 42,
+                h: 0.6,
+                fontSize: 48,
                 color: colors.white,
                 align: 'center',
-                bold: false,
+                bold: true,
                 fontFace: 'IBM Plex Sans'
             });
 
-            // Key Insights Section
-            slide.addText('Key Insights', {
+            // Top Achievement Section - More prominent
+            slide.addText('Top Achievement', {
                 x: 0.5,
                 y: 3.4,
                 w: 9,
                 h: 0.4,
-                fontSize: 20,
-                bold: false,
+                fontSize: 22,
+                bold: true,
                 color: colors.text,
                 fontFace: 'IBM Plex Sans'
             });
 
-            // Top highlight summary
             const topHighlight = data.top3Highlights.length > 0 ? data.top3Highlights[0] : null;
             if (topHighlight) {
+                // Achievement box with gradient-like effect
                 slide.addShape(pptx.ShapeType.rect, {
                     x: 0.5,
-                    y: 3.9,
+                    y: 3.95,
                     w: 9,
-                    h: 1.0,
+                    h: 1.4,
                     fill: { color: colors.background },
-                    line: { color: colors.cardBackground, width: 1 }
+                    line: { color: colors.primary, width: 2 }
                 });
                 
+                // Left accent bar - thicker for emphasis
                 slide.addShape(pptx.ShapeType.rect, {
                     x: 0.5,
-                    y: 3.9,
-                    w: 0.08,
-                    h: 1.0,
+                    y: 3.95,
+                    w: 0.15,
+                    h: 1.4,
                     fill: { color: colors.primary },
                     line: { type: 'none' }
                 });
                 
-                slide.addText(`🥇 Top Achievement: ${topHighlight.name}`, {
-                    x: 0.8,
-                    y: 4.0,
-                    w: 8.5,
-                    h: 0.4,
-                    fontSize: 14,
+                // Achievement title - smaller font as requested
+                slide.addText(`${topHighlight.name}`, {
+                    x: 0.9,
+                    y: 4.1,
+                    w: 8.4,
+                    h: 0.5,
+                    fontSize: 13,
                     bold: true,
                     color: colors.text,
-                    fontFace: 'IBM Plex Sans'
+                    fontFace: 'IBM Plex Sans',
+                    wrap: true
                 });
                 
-                slide.addText(`Product: ${topHighlight.product} | Impact: ${topHighlight.impact}`, {
-                    x: 0.8,
-                    y: 4.5,
-                    w: 8.5,
+                // Product and Impact details - smaller font
+                slide.addText(`Product: ${topHighlight.product}`, {
+                    x: 0.9,
+                    y: 4.7,
+                    w: 4,
                     h: 0.3,
-                    fontSize: 11,
+                    fontSize: 10,
                     color: colors.textSecondary,
                     fontFace: 'IBM Plex Sans'
                 });
+                
+                slide.addText(`Impact: ${topHighlight.impact}`, {
+                    x: 5.2,
+                    y: 4.7,
+                    w: 4,
+                    h: 0.3,
+                    fontSize: 10,
+                    color: colors.textSecondary,
+                    fontFace: 'IBM Plex Sans'
+                });
+                
+                // Delivery date
+                if (topHighlight.date) {
+                    slide.addText(`Delivered: ${topHighlight.date}`, {
+                        x: 0.9,
+                        y: 5.05,
+                        w: 8.4,
+                        h: 0.25,
+                        fontSize: 9,
+                        color: colors.textSecondary,
+                        italic: true,
+                        fontFace: 'IBM Plex Sans'
+                    });
+                }
             }
 
-            // Status Overview
-            const totalItems = Object.values(data.overallStates).reduce((sum, count) => sum + count, 0);
-            slide.addShape(pptx.ShapeType.rect, {
+            // Portfolio Overview Section
+            slide.addText('Portfolio Overview', {
                 x: 0.5,
-                y: 5.1,
+                y: 5.6,
                 w: 9,
-                h: 0.8,
-                fill: { color: colors.background },
-                line: { color: colors.cardBackground, width: 1 }
-            });
-            
-            slide.addText(`📊 Total Items Tracked: ${totalItems} across ${totalProducts} products`, {
-                x: 0.8,
-                y: 5.3,
-                w: 8.5,
-                h: 0.4,
-                fontSize: 13,
+                h: 0.35,
+                fontSize: 22,
+                bold: true,
                 color: colors.text,
                 fontFace: 'IBM Plex Sans'
             });
 
-            // Footer note
-            slide.addText('Detailed breakdown available in following slides', {
+            const totalItems = Object.values(data.overallStates).reduce((sum, count) => sum + count, 0);
+            
+            // Portfolio stats box
+            slide.addShape(pptx.ShapeType.rect, {
                 x: 0.5,
-                y: 6.3,
+                y: 6.05,
                 w: 9,
+                h: 0.7,
+                fill: { color: colors.white },
+                line: { color: colors.cardBackground, width: 1 }
+            });
+            
+            // Total items tracked
+            slide.addText(`${totalItems}`, {
+                x: 1,
+                y: 6.2,
+                w: 2,
+                h: 0.4,
+                fontSize: 28,
+                bold: true,
+                color: colors.primary,
+                align: 'center',
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            slide.addText('Total Items', {
+                x: 3.2,
+                y: 6.25,
+                w: 2.5,
                 h: 0.3,
-                fontSize: 11,
+                fontSize: 12,
+                color: colors.text,
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            // Products tracked
+            slide.addText(`${totalProducts}`, {
+                x: 6,
+                y: 6.2,
+                w: 1.5,
+                h: 0.4,
+                fontSize: 28,
+                bold: true,
+                color: colors.interactive,
+                align: 'center',
+                fontFace: 'IBM Plex Sans'
+            });
+            
+            slide.addText('Products', {
+                x: 7.7,
+                y: 6.25,
+                w: 1.5,
+                h: 0.3,
+                fontSize: 12,
+                color: colors.text,
+                fontFace: 'IBM Plex Sans'
+            });
+
+            // Footer note - professional
+            slide.addText('Detailed analysis and breakdown available in subsequent slides', {
+                x: 0.5,
+                y: 6.9,
+                w: 9,
+                h: 0.25,
+                fontSize: 10,
                 color: colors.textSecondary,
                 italic: true,
                 align: 'center',
